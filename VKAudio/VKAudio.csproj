@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Platforms>AnyCPU;x64</Platforms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Resources\play.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NAudio" Version="1.9.0" />
+    <PackageReference Include="VkNet" Version="1.48.1" />
+    <PackageReference Include="VkNet.AudioBypassService" Version="1.5.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\play.png" />
+  </ItemGroup>
+
+</Project>
