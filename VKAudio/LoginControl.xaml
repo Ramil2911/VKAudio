@@ -1,19 +1,16 @@
 ﻿<UserControl x:Class="VK.LoginControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:VK"
-             mc:Ignorable="d" 
+             mc:Ignorable="d"
              d:DesignHeight="425" d:DesignWidth="300">
     <Grid>
-        <TextBox x:Name="LoginField" HorizontalAlignment="Center" Margin="0,146,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="241"/>
-        <Button x:Name="LoginButton" Content="Log in" HorizontalAlignment="Left" Margin="234,229,0,0" VerticalAlignment="Top" Click="Login_Click"/>
-        <TextBlock x:Name="LogInfo" HorizontalAlignment="Left" Margin="23,263,0,0" Text="Login info:" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White"/>
-        <TextBlock x:Name="LogInfo_firstName" HorizontalAlignment="Left" Margin="23,279,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" Width="98"/>
-        <TextBlock x:Name="LogInfo_lastName" HorizontalAlignment="Left" Margin="23,295,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" Width="98"/>
-        <TextBlock x:Name="ErrorText" HorizontalAlignment="Left" Margin="55,228,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Background="#00000000" Foreground="White" Width="95"/>
-        <PasswordBox x:Name="PasswordField" HorizontalAlignment="Center" VerticalAlignment="Top" Width="241" Margin="0,189,0,0"/>
-        <TextBlock HorizontalAlignment="Left" Margin="269,399,0,0" Text="v0.1" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White"/>
+        <TextBox x:Name="LoginField" HorizontalAlignment="Center" Margin="0,146,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="241" />
+        <Button x:Name="LoginButton" Content="Log in" HorizontalAlignment="Left" Margin="234,229,0,0" VerticalAlignment="Top" Click="Login_Click" />
+        <TextBlock x:Name="ErrorText" HorizontalAlignment="Left" Margin="30,226,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Background="#00000000" Foreground="White" Width="94" />
+        <PasswordBox x:Name="PasswordField" HorizontalAlignment="Center" VerticalAlignment="Top" Width="241" Margin="0,189,0,0" />
+        <TextBlock HorizontalAlignment="Left" Margin="269,399,0,0" Text="v0.1" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" />
     </Grid>
 </UserControl>

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Configuration;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -16,27 +17,50 @@ namespace VK
         private ServiceCollection services = new ServiceCollection();
         private VkApi api;
 
+        private Configuration config;
+
         public LoginControl()
         {
             InitializeComponent();
 
+            config = ConfigurationManager.OpenExeConfiguration(System.Reflection.Assembly.GetExecutingAssembly().Location);
+
             services.AddAudioBypass();
+
+            LoginAsync(true);
         }
 
-        private async void LoginAsync()
+        private async void LoginAsync(bool withKey)
         {
+            Task auth;
             api = new VkApi(services);
 
             ErrorText.Text = "Вход...";
 
-            Task auth = api.AuthorizeAsync(
+            if (!withKey)
+            {
+                auth = api.AuthorizeAsync(
                    new VkNet.Model.ApiAuthParams()
                    {
                        Login = LoginField.Text,
                        Password = PasswordField.Password,
                        Settings = VkNet.Enums.Filters.Settings.All,
-                       ApplicationId = 7295930
                    });
+            }
+            else if (ConfigurationManager.AppSettings.Get("vkkey").ToString() == null)
+            {
+                auth = api.AuthorizeAsync(
+                   new VkNet.Model.ApiAuthParams()
+                   {
+                       AccessToken = config.AppSettings.Settings["vkkey"].Value.ToString(),
+                       Settings = VkNet.Enums.Filters.Settings.All,
+                   });
+            }
+            else
+            {
+                ErrorText.Text = "";
+                return;
+            }
 
             try
             {
@@ -45,33 +69,38 @@ namespace VK
             catch (VkNet.Exception.VkAuthorizationException)
             {
                 ErrorText.Text = "Неправильный логин или пароль";
+                ErrorText.Text = "";
                 return;
             }
             catch (VkNet.Exception.VkApiException)
             {
                 ErrorText.Text = "Неизвестная ошибка";
+                ErrorText.Text = "";
                 return;
             }
             catch (NullReferenceException)
             {
                 ErrorText.Text = "NullReferenceException!";
+                ErrorText.Text = "";
                 return;
             }
             catch (AggregateException)
             {
                 ErrorText.Text = "Error!";
+                ErrorText.Text = "";
+                return;
             }
 
             auth.Wait();
 
-            LogInfo_firstName.Text = api.Account.GetProfileInfo().FirstName.ToString();
-            LogInfo_lastName.Text = api.Account.GetProfileInfo().LastName.ToString();
             ErrorText.Text = "Успешно!";
+
+            config.AppSettings.Settings["vkkey"].Value = api.Token.ToString();
 
             MainWindow mainWindow = Window.GetWindow(this) as MainWindow;
             mainWindow.OpenMainPage_Func(api);
         }
 
-        public void Login_Click(object sender, RoutedEventArgs e) => LoginAsync(); // Button Login Click
+        public void Login_Click(object sender, RoutedEventArgs e) => LoginAsync(false); // Button Login Click
     }
 }

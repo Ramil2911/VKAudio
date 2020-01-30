@@ -5,23 +5,23 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:VK"
         mc:Ignorable="d"
-        ResizeMode="NoResize"
+        ResizeMode="CanMinimize"
 
-        Title="VK" Height="500
+        Title="VKAudio" Height="500
         " Width="300" Background="#FF102B46" AllowsTransparency="False" WindowStyle="SingleBorderWindow" BorderThickness="0,1,0,0" BorderBrush="#FF102B46">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition/>
-            <ColumnDefinition Width="0*"/>
+            <ColumnDefinition />
+            <ColumnDefinition Width="0*" />
         </Grid.ColumnDefinitions>
-        <ContentControl x:Name="ContentController" HorizontalAlignment="Center" Height="464" VerticalAlignment="Center" Width="300"/>
+        <ContentControl x:Name="ContentController" HorizontalAlignment="Center" Height="464" VerticalAlignment="Center" Width="300" />
         <DockPanel LastChildFill="False" Margin="0,459,0,0" Background="#FF173757">
             <Button x:Name="PlayOrPause" DockPanel.Dock="Right" Width="26">
                 <Image Source="Resources/play.png" Margin="5,0,5,0" />
                 <Button.Resources>
                     <Style TargetType="Border">
                         <Setter Property="CornerRadius" Value="24
-                                "/>
+                                " />
                     </Style>
                 </Button.Resources>
             </Button>
