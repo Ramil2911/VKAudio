@@ -1,5 +1,4 @@
-﻿using System;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using VkNet;
 using VkNet.Model.Attachments;
@@ -20,7 +19,7 @@ namespace VK
 
             TRACK_NAME.Text = track.Title.ToString();
             TRACK_AUTHOR.Text = track.Artist.ToString();
-            if(track.IsHq ?? false)
+            if (track.IsHq ?? false)
             {
                 IsHQ.Visibility = Visibility.Hidden;
             }
@@ -29,7 +28,7 @@ namespace VK
         private void Play_Click(object sender, RoutedEventArgs e)
         {
             MainWindow window = Application.Current.MainWindow as MainWindow;
-            _ = window.background.PlayMusic(track);
+            window.background.PlayMusic(track);
         }
 
         public Audio Track { get => track; set => track = value; }

@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using VkNet;
 
 namespace VK
 {
@@ -10,7 +9,6 @@ namespace VK
     /// </summary>
     public partial class MainControl : UserControl
     {
-
         public MainControl()
         {
             InitializeComponent();

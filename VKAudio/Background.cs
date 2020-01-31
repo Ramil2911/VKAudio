@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows;
 using VkNet;
 using VkNet.AudioBypassService.Extensions;
 using VkNet.Model.Attachments;
@@ -31,7 +30,8 @@ namespace VK
         public bool IsPaused { get => isPaused; }
         public VkApi Api { get => api; }
 
-        public Background(VkApi myApi) {
+        public Background(VkApi myApi)
+        {
             api = myApi;
 
             nextTrackTimer = new System.Timers.Timer();
