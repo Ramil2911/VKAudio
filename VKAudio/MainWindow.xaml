@@ -14,7 +14,7 @@
             <ColumnDefinition />
             <ColumnDefinition Width="0*" />
         </Grid.ColumnDefinitions>
-        <ContentControl x:Name="ContentController" HorizontalAlignment="Center" Height="464" VerticalAlignment="Center" Width="300" />
+        <ContentControl x:Name="ContentController" HorizontalAlignment="Center" Height="424" VerticalAlignment="Center" Width="300" />
         <DockPanel LastChildFill="False" Margin="0,459,0,0" Background="#FF173757">
             <Button x:Name="PlayOrPause" DockPanel.Dock="Right" Width="26">
                 <Image Source="Resources/play.png" Margin="5,0,5,0" />

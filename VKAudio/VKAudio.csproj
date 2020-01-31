@@ -18,6 +18,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="..\.editorconfig" Link=".editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="NAudio" Version="1.9.0" />
     <PackageReference Include="VkNet" Version="1.48.1" />
     <PackageReference Include="VkNet.AudioBypassService" Version="1.5.3" />

@@ -14,7 +14,6 @@ namespace VK
         {
             InitializeComponent();
 
-            background = new VK.Background();
             ContentController.Content = new LoginControl();
         }
 
@@ -25,7 +24,8 @@ namespace VK
 
         public void OpenMainPage_Func(VkApi api)
         {
-            ContentController.Content = new MainControl(api);
+            background = new VK.Background(api);
+            ContentController.Content = new MainControl();
         }
     }
 }

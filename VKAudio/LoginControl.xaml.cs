@@ -64,34 +64,61 @@ namespace VK
 
             try
             {
-                await auth;
+                if (!withKey)
+                {
+                    await api.AuthorizeAsync(
+                       new VkNet.Model.ApiAuthParams()
+                       {
+                           Login = LoginField.Text,
+                           Password = PasswordField.Password,
+                           Settings = VkNet.Enums.Filters.Settings.All,
+                       });
+                }
+                else if (ConfigurationManager.AppSettings.Get("vkkey").ToString() == null)
+                {
+                    await api.AuthorizeAsync(
+                       new VkNet.Model.ApiAuthParams()
+                       {
+                           AccessToken = config.AppSettings.Settings["vkkey"].Value.ToString(),
+                           Settings = VkNet.Enums.Filters.Settings.All,
+                       });
+                }
+                else
+                {
+                    ErrorText.Text = "";
+                    return;
+                }
+            }
+            catch (VkNet.Exception.VkApiAuthorizationException)
+            {
+                ErrorText.Text = "Неправильный логин или пароль";
+                return;
             }
             catch (VkNet.Exception.VkAuthorizationException)
             {
                 ErrorText.Text = "Неправильный логин или пароль";
-                ErrorText.Text = "";
                 return;
             }
             catch (VkNet.Exception.VkApiException)
             {
                 ErrorText.Text = "Неизвестная ошибка";
-                ErrorText.Text = "";
                 return;
             }
             catch (NullReferenceException)
             {
                 ErrorText.Text = "NullReferenceException!";
-                ErrorText.Text = "";
+                return;
+            }
+            catch (VkNet.AudioBypassService.Exceptions.VkAuthException)
+            {
+                ErrorText.Text = "Неправильный логин или пароль";
                 return;
             }
             catch (AggregateException)
             {
                 ErrorText.Text = "Error!";
-                ErrorText.Text = "";
                 return;
             }
-
-            auth.Wait();
 
             ErrorText.Text = "Успешно!";
 

@@ -1,7 +1,10 @@
 ﻿using NAudio.Wave;
 using System;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 using VkNet;
 using VkNet.AudioBypassService.Extensions;
 using VkNet.Model.Attachments;
@@ -14,57 +17,67 @@ namespace VK
         private VkNet.Model.Attachments.Audio currentTrack;
         private VkNet.Utils.VkCollection<VkNet.Model.Attachments.Audio> myTracks;
 
+        private System.Timers.Timer nextTrackTimer;
         private WaveOutEvent waveOut;
 
         private string[] files;
 
         private bool isPaused;
 
+        private VkApi api;
+
         public Audio CurrentTrack { get => currentTrack; }
         public VkCollection<Audio> MyTracks { get => myTracks; }
         public bool IsPaused { get => isPaused; }
+        public VkApi Api { get => api; }
 
-        public async Task PlayMusic(VkNet.Model.Attachments.Audio track, VkApi api)
+        public Background(VkApi myApi) {
+            api = myApi;
+
+            nextTrackTimer = new System.Timers.Timer();
+            nextTrackTimer.Elapsed += OnNextTrack;
+            nextTrackTimer.AutoReset = false;
+        }
+
+        public async Task PlayMusic(VkNet.Model.Attachments.Audio track)
         {
-            if (!isPaused)
+            await Task.Run(() =>
             {
-                await Task.Run(() =>
+                if (waveOut != null) { waveOut.Stop(); };
+                if (Directory.Exists($"C:\\ProgramData\\ramil2911\\VKAudio\\audiocache{track.Id}"))
                 {
-                    if (waveOut != null) { waveOut.Stop(); };
-                    if (Directory.Exists($"C:\\ProgramData\\ramil2911\\VKAudio\\audiocache{track.Id}"))
+                    try
                     {
-                        try
-                        {
-                            files = Directory.GetFiles($"C:\\ProgramData\\ramil2911\\VKAudio\\audiocache{track.Id}", "*.mp3");
-                            Mp3FileReader reader = new Mp3FileReader(files[0]);
-                            waveOut = new WaveOutEvent();
-                            waveOut.Init(reader);
-                            waveOut.Play();
-                        }
-                        catch
-                        {
-                            return; //TODO: обработчик исключений
-                        }
-                    }
-                    else
-                    {
-                        Uri downloadURL = Decoder.DecodeAudioUrl(track.Url); //творим чудеса криптографии
-                        api.Audio.Download(downloadURL, $"C:\\ProgramData\\ramil2911\\VKAudio\\audiocache{track.Id}");
                         files = Directory.GetFiles($"C:\\ProgramData\\ramil2911\\VKAudio\\audiocache{track.Id}", "*.mp3");
                         Mp3FileReader reader = new Mp3FileReader(files[0]);
                         waveOut = new WaveOutEvent();
                         waveOut.Init(reader);
                         waveOut.Play();
                     }
-                    currentTrack = track;
-                });
-            }
-            else
-            {
-                waveOut.Play();
-            }
+                    catch
+                    {
+                        return; //TODO: обработчик исключений
+                    }
+                }
+                else
+                {
+                    Uri downloadURL = Decoder.DecodeAudioUrl(track.Url); //творим чудеса криптографии
+                    api.Audio.Download(downloadURL, $"C:\\ProgramData\\ramil2911\\VKAudio\\audiocache{track.Id}");
+                    files = Directory.GetFiles($"C:\\ProgramData\\ramil2911\\VKAudio\\audiocache{track.Id}", "*.mp3");
+                    Mp3FileReader reader = new Mp3FileReader(files[0]);
+                    waveOut = new WaveOutEvent();
+                    waveOut.Init(reader);
+                    waveOut.Play();
+                }
+                currentTrack = track;
+            });
 
             isPaused = false;
+
+            Debug.WriteLine("Starting timer");
+            nextTrackTimer.Interval = track.Duration * 1000 + 1;
+            nextTrackTimer.Start();
+            Debug.WriteLine("Timer started");
         }
 
         public async Task PauseMusic()
@@ -74,6 +87,7 @@ namespace VK
                 waveOut.Pause();
             });
             isPaused = true;
+            nextTrackTimer.Stop();
         }
 
         public async Task ContinueMusic()
@@ -83,6 +97,7 @@ namespace VK
                 waveOut.Play();
             });
             isPaused = false;
+            nextTrackTimer.Start();
         }
 
         public async Task StopMusic()
@@ -93,9 +108,10 @@ namespace VK
                 waveOut.Stop();
             });
             isPaused = true;
+            nextTrackTimer.Stop();
         }
 
-        public async Task UpdateAudioList(VkApi api)
+        public async Task UpdateAudioList()
         {
             await Task.Run(async () =>
             {
@@ -104,6 +120,18 @@ namespace VK
                     OwnerId = api.UserId,
                 });
             });
+        }
+
+        private void OnNextTrack(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            Debug.WriteLine("Event: Next Track");
+            int nextTrack = myTracks.IndexOf(currentTrack) + 1;
+            if (myTracks.Count() < nextTrack + 1)
+            {
+                nextTrack = 0;
+            }
+            Debug.WriteLine($"Next is \"{myTracks[nextTrack].Title}\"");
+            PlayMusic(myTracks[nextTrack]);
         }
     }
 }

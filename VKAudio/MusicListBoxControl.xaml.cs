@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Controls;
 using VkNet;
 using VkNet.Model.Attachments;
@@ -12,23 +13,23 @@ namespace VK
     {
         private VkNet.Model.Attachments.Audio track;
 
-        private VkApi api;
-
-        public MusicListBoxControl(VkNet.Model.Attachments.Audio audio, ref VkApi myApi)
+        public MusicListBoxControl(VkNet.Model.Attachments.Audio audio, VkApi myApi)
         {
             InitializeComponent();
             track = audio;
 
             TRACK_NAME.Text = track.Title.ToString();
             TRACK_AUTHOR.Text = track.Artist.ToString();
-
-            api = myApi;
+            if(track.IsHq ?? false)
+            {
+                IsHQ.Visibility = Visibility.Hidden;
+            }
         }
 
         private void Play_Click(object sender, RoutedEventArgs e)
         {
             MainWindow window = Application.Current.MainWindow as MainWindow;
-            _ = window.background.PlayMusic(track, api);
+            _ = window.background.PlayMusic(track);
         }
 
         public Audio Track { get => track; set => track = value; }

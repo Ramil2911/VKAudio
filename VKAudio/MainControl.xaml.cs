@@ -10,13 +10,10 @@ namespace VK
     /// </summary>
     public partial class MainControl : UserControl
     {
-        private VkApi api; //апи, хранит пользователя
 
-        public MainControl(VkApi myApi)
+        public MainControl()
         {
             InitializeComponent();
-
-            api = myApi;
 
             _ = DrawAudioList();
         }
@@ -24,10 +21,10 @@ namespace VK
         private async Task DrawAudioList()
         {
             MainWindow window = Application.Current.MainWindow as MainWindow;
-            await window.background.UpdateAudioList(api);
+            await window.background.UpdateAudioList();
             foreach (VkNet.Model.Attachments.Audio track in window.background.MyTracks)
             {
-                AudioList.Items.Add(new MusicListBoxControl(track, ref api));
+                AudioList.Items.Add(new MusicListBoxControl(track, window.background.Api));
             }
         }
     }
