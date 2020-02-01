@@ -10,5 +10,6 @@
         <TextBlock x:Name="TRACK_AUTHOR" HorizontalAlignment="Left" Margin="10,27,0,0" Text="TRACK_AUTHOR" TextWrapping="NoWrap" VerticalAlignment="Top" Foreground="White" Width="190" TextTrimming="CharacterEllipsis" />
         <Button x:Name="Play" Content="Play" HorizontalAlignment="Left" Margin="255,0,0,0" VerticalAlignment="Center" Click="Play_Click" />
         <TextBlock x:Name="IsHQ" HorizontalAlignment="Left" Margin="232,4,0,0" Text="HQ" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" Visibility="Visible" />
+        <TextBlock x:Name="TRACK_DURATION" HorizontalAlignment="Left" Margin="220,25,0,0" Text="9:99" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" Width="30" TextAlignment="Right"/>
     </Grid>
 </UserControl>

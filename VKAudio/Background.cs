@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using VKAudio;
 using VkNet;
 using VkNet.AudioBypassService.Extensions;
 using VkNet.Model.Attachments;
@@ -26,7 +27,7 @@ namespace VK
         private VkApi api;
 
         public Audio CurrentTrack { get => currentTrack; }
-        public VkCollection<Audio> MyTracks { get => myTracks; }
+        public VkCollection<Audio> MyTracks { get => myTracks; set => myTracks = value; }
         public bool IsPaused { get => isPaused; }
         public VkApi Api { get => api; }
 
@@ -43,9 +44,11 @@ namespace VK
         {
             await Task.Run(() =>
             {
+                Debug.WriteLine($"Starting {track.Title}--{track.Id}");
                 if (waveOut != null) { waveOut.Stop(); };
                 if (Directory.Exists($"C:\\ProgramData\\ramil2911\\VKAudio\\audiocache{track.Id}"))
                 {
+                    Debug.WriteLine("Track already exists");
                     try
                     {
                         files = Directory.GetFiles($"C:\\ProgramData\\ramil2911\\VKAudio\\audiocache{track.Id}", "*.mp3");
@@ -54,14 +57,20 @@ namespace VK
                         waveOut.Init(reader);
                         waveOut.Play();
                     }
-                    catch
+                    catch(Exception ex)
                     {
+                        Debug.WriteLine($"{track.Title} cannot be loaded");
+                        Debug.WriteLine($"{ex.Message}");
+                        Debug.WriteLine($"{ex.StackTrace}");
                         return; //TODO: обработчик исключений
                     }
+
                 }
                 else
                 {
-                    Uri downloadURL = Decoder.DecodeAudioUrl(track.Url); //творим чудеса криптографии
+                    Debug.WriteLine("Loading track");
+                    Uri downloadURL = StaticFunctions.DecodeAudioUrl(track.Url); //творим чудеса криптографии
+                    Debug.WriteLine($"URL is {downloadURL}");
                     api.Audio.Download(downloadURL, $"C:\\ProgramData\\ramil2911\\VKAudio\\audiocache{track.Id}");
                     files = Directory.GetFiles($"C:\\ProgramData\\ramil2911\\VKAudio\\audiocache{track.Id}", "*.mp3");
                     Mp3FileReader reader = new Mp3FileReader(files[0]);

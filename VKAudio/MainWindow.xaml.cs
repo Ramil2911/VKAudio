@@ -8,13 +8,13 @@ namespace VK
     /// </summary>
     public partial class MainWindow : Window
     {
-        public VK.Background background;
+        public Background background;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            ContentController.Content = new LoginControl();
+            CurrentContent.Content = new LoginControl();
         }
 
         private void Exit_Click(object sender, RoutedEventArgs e)
@@ -25,7 +25,7 @@ namespace VK
         public void OpenMainPage_Func(VkApi api)
         {
             background = new VK.Background(api);
-            ContentController.Content = new MainControl();
+            CurrentContent.Content = new MainControl();
         }
     }
 }

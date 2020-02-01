@@ -5,8 +5,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:VK"
              mc:Ignorable="d"
-             d:DesignHeight="425" d:DesignWidth="300">
+             d:DesignHeight="430" d:DesignWidth="300">
     <Grid Background="#FF102B46">
-        <ListBox x:Name="AudioList" Background="#FF102B46" Foreground="White" BorderBrush="#00000000" />
+        <ListBox x:Name="AudioList" Background="#FF102B46" Foreground="White" BorderBrush="#00000000" ScrollViewer.ScrollChanged="ScrollEvent" ScrollViewer.VerticalScrollBarVisibility="Disabled" VirtualizingPanel.ScrollUnit="Item" PreviewMouseWheel="PreviewMouseWheelEvent"/>
     </Grid>
 </UserControl>

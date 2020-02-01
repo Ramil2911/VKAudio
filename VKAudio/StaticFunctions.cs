@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Linq;
+using System.Windows;
+using System.Windows.Media;
 
-namespace VK
+namespace VKAudio
 {
-    public static class Decoder
+    public static class StaticFunctions
     {
         public static Uri DecodeAudioUrl(this Uri audioUrl)
         {

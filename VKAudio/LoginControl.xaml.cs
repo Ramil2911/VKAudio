@@ -32,14 +32,13 @@ namespace VK
 
         private async void LoginAsync(bool withKey)
         {
-            Task auth;
             api = new VkApi(services);
 
             ErrorText.Text = "Вход...";
 
             if (!withKey)
             {
-                auth = api.AuthorizeAsync(
+                api.AuthorizeAsync(
                    new VkNet.Model.ApiAuthParams()
                    {
                        Login = LoginField.Text,
@@ -49,7 +48,7 @@ namespace VK
             }
             else if (ConfigurationManager.AppSettings.Get("vkkey").ToString() == null)
             {
-                auth = api.AuthorizeAsync(
+                api.AuthorizeAsync(
                    new VkNet.Model.ApiAuthParams()
                    {
                        AccessToken = config.AppSettings.Settings["vkkey"].Value.ToString(),
