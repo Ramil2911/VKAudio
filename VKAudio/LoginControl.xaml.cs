@@ -1,11 +1,16 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Configuration;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using VKAudio;
 using VkNet;
 using VkNet.AudioBypassService.Extensions;
+using System.IO;
+using System.Text;
 
 namespace VK
 {
@@ -14,79 +19,71 @@ namespace VK
     /// </summary>
     public partial class LoginControl : UserControl
     {
-        private ServiceCollection services = new ServiceCollection();
-        private VkApi api;
-
-        private Configuration config;
+        private readonly ServiceCollection _services = new ServiceCollection();
+        private VkApi _api;
 
         public LoginControl()
         {
             InitializeComponent();
-
-            config = ConfigurationManager.OpenExeConfiguration(System.Reflection.Assembly.GetExecutingAssembly().Location);
-
-            services.AddAudioBypass();
-
-            LoginAsync(true);
         }
 
-        private async void LoginAsync(bool withKey)
+        protected override void OnInitialized(EventArgs e)
         {
-            api = new VkApi(services);
+            _services.AddAudioBypass();
+            _api = new VkApi(_services);
+            LoginByToken();
+            base.OnInitialized(e);
+        }
 
+        private async Task LoginByToken()
+        {
             ErrorText.Text = "Вход...";
-
-            if (!withKey)
+            Debug.Print("LoginByToken()");
+            Debug.Print(File.ReadAllLines("C:\\ProgramData\\ramil2911\\VKAudio\\token", Encoding.Default)[0]);
+            if (string.IsNullOrWhiteSpace(File.ReadAllLines("C:\\ProgramData\\ramil2911\\VKAudio\\token", Encoding.Default)[0])) return;
+                
+            if (!StaticFunctions.CheckForInternetConnection())
             {
-                api.AuthorizeAsync(
-                   new VkNet.Model.ApiAuthParams()
-                   {
-                       Login = LoginField.Text,
-                       Password = PasswordField.Password,
-                       Settings = VkNet.Enums.Filters.Settings.All,
-                   });
-            }
-            else if (ConfigurationManager.AppSettings.Get("vkkey").ToString() == null)
-            {
-                api.AuthorizeAsync(
-                   new VkNet.Model.ApiAuthParams()
-                   {
-                       AccessToken = config.AppSettings.Settings["vkkey"].Value.ToString(),
-                       Settings = VkNet.Enums.Filters.Settings.All,
-                   });
-            }
-            else
-            {
+                Debug.Print("PIZDA");
+                MainWindow mainWindowa = Window.GetWindow(this) as MainWindow;
+                mainWindowa?.OpenMainPage_Func(null);
                 ErrorText.Text = "";
                 return;
             }
+                
+            try
+            {
+                await _api.AuthorizeAsync(
+                    new VkNet.Model.ApiAuthParams
+                    {
+                        AccessToken = File.ReadAllLines("C:\\ProgramData\\ramil2911\\VKAudio\\token", Encoding.Default)[0],
+                        Settings = VkNet.Enums.Filters.Settings.All
+                    });
+                Debug.Print(_api.Token);
+            }
+            catch (Exception ex)
+            {
+                Debug.Print($"PIZDA2 {ex.Message}");
+                ErrorText.Text = "";
+                return;
+            }
+            ErrorText.Text = "";
+            MainWindow mainWindow = Window.GetWindow(this) as MainWindow;
+            mainWindow?.OpenMainPage_Func(_api);
+        }
+
+        private async void LoginAsync()
+        {
 
             try
             {
-                if (!withKey)
-                {
-                    await api.AuthorizeAsync(
-                       new VkNet.Model.ApiAuthParams()
-                       {
-                           Login = LoginField.Text,
-                           Password = PasswordField.Password,
-                           Settings = VkNet.Enums.Filters.Settings.All,
-                       });
-                }
-                else if (ConfigurationManager.AppSettings.Get("vkkey").ToString() == null)
-                {
-                    await api.AuthorizeAsync(
-                       new VkNet.Model.ApiAuthParams()
-                       {
-                           AccessToken = config.AppSettings.Settings["vkkey"].Value.ToString(),
-                           Settings = VkNet.Enums.Filters.Settings.All,
-                       });
-                }
-                else
-                {
-                    ErrorText.Text = "";
-                    return;
-                }
+                await _api.AuthorizeAsync(
+                    new VkNet.Model.ApiAuthParams()
+                    {
+                        Login = LoginField.Text,
+                        Password = PasswordField.Password,
+                        Settings = VkNet.Enums.Filters.Settings.All,
+                    });
             }
             catch (VkNet.Exception.VkApiAuthorizationException)
             {
@@ -120,13 +117,16 @@ namespace VK
             }
 
             ErrorText.Text = "Успешно!";
-
-            config.AppSettings.Settings["vkkey"].Value = api.Token.ToString();
+            if (!Directory.Exists("C:\\ProgramData\\ramil2911\\VKAudio"))
+                Directory.CreateDirectory("C:\\ProgramData\\ramil2911\\VKAudio");
+            if (!File.Exists("C:\\ProgramData\\ramil2911\\VKAudio\\token"))
+                File.Create("C:\\ProgramData\\ramil2911\\VKAudio\\token");
+            File.WriteAllText("C:\\ProgramData\\ramil2911\\VKAudio\\token", _api.Token.ToString());
 
             MainWindow mainWindow = Window.GetWindow(this) as MainWindow;
-            mainWindow.OpenMainPage_Func(api);
+            mainWindow?.OpenMainPage_Func(_api);
         }
 
-        public void Login_Click(object sender, RoutedEventArgs e) => LoginAsync(false); // Button Login Click
+        public void Login_Click(object sender, RoutedEventArgs e) => LoginAsync(); // Button Login Click
     }
 }

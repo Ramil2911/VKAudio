@@ -1,61 +1,48 @@
-﻿using NAudio.Wave;
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Timers;
+using NAudio.Wave;
 using VKAudio;
 using VkNet;
-using VkNet.AudioBypassService.Extensions;
-using VkNet.Model.Attachments;
-using VkNet.Utils;
+using VkNet.Model.RequestParams;
 
 namespace VK
 {
     public class Background
     {
-        private VkNet.Model.Attachments.Audio currentTrack;
-        private VkNet.Utils.VkCollection<VkNet.Model.Attachments.Audio> myTracks;
-
-        private System.Timers.Timer nextTrackTimer;
-        private WaveOutEvent waveOut;
-
-        private string[] files;
-
-        private bool isPaused;
-
-        private VkApi api;
-
-        public Audio CurrentTrack { get => currentTrack; }
-        public VkCollection<Audio> MyTracks { get => myTracks; set => myTracks = value; }
-        public bool IsPaused { get => isPaused; }
-        public VkApi Api { get => api; }
+        private readonly Timer _nextTrackTimer;
+        private WaveOutEvent _waveOut;
+        private VkApi Api { get; }
+        private OfflineTrack CurrentTrack { get; set; }
 
         public Background(VkApi myApi)
         {
-            api = myApi;
+            Api = myApi;
+            Debug.Print(Api.UserId.ToString());
 
-            nextTrackTimer = new System.Timers.Timer();
-            nextTrackTimer.Elapsed += OnNextTrack;
-            nextTrackTimer.AutoReset = false;
+            _nextTrackTimer = new Timer();
+            _nextTrackTimer.Elapsed += OnNextTrack;
+            _nextTrackTimer.AutoReset = false;
         }
 
-        public async Task PlayMusic(VkNet.Model.Attachments.Audio track)
+        public async Task PlayMusic(OfflineTrack track)
         {
             await Task.Run(() =>
             {
                 Debug.WriteLine($"Starting {track.Title}--{track.Id}");
-                if (waveOut != null) { waveOut.Stop(); };
-                if (Directory.Exists($"C:\\ProgramData\\ramil2911\\VKAudio\\audiocache{track.Id}"))
+                _waveOut?.Stop();
+                if (track.IsCached)
                 {
                     Debug.WriteLine("Track already exists");
                     try
                     {
-                        files = Directory.GetFiles($"C:\\ProgramData\\ramil2911\\VKAudio\\audiocache{track.Id}", "*.mp3");
-                        Mp3FileReader reader = new Mp3FileReader(files[0]);
-                        waveOut = new WaveOutEvent();
-                        waveOut.Init(reader);
-                        waveOut.Play();
+                        var reader = new Mp3FileReader(track.Cache(Api));
+                        _waveOut = new WaveOutEvent();
+                        _waveOut.Init(reader);
+                        _waveOut.Play();
                     }
                     catch(Exception ex)
                     {
@@ -66,81 +53,67 @@ namespace VK
                     }
 
                 }
-                else
+                else if(StaticFunctions.CheckForInternetConnection())
                 {
-                    Debug.WriteLine("Loading track");
-                    Uri downloadURL = StaticFunctions.DecodeAudioUrl(track.Url); //творим чудеса криптографии
-                    Debug.WriteLine($"URL is {downloadURL}");
-                    api.Audio.Download(downloadURL, $"C:\\ProgramData\\ramil2911\\VKAudio\\audiocache{track.Id}");
-                    files = Directory.GetFiles($"C:\\ProgramData\\ramil2911\\VKAudio\\audiocache{track.Id}", "*.mp3");
-                    Mp3FileReader reader = new Mp3FileReader(files[0]);
-                    waveOut = new WaveOutEvent();
-                    waveOut.Init(reader);
-                    waveOut.Play();
+                    var reader = new Mp3FileReader(track.Cache(Api));
+                    _waveOut = new WaveOutEvent();
+                    _waveOut.Init(reader);
+                    _waveOut.Play();
                 }
-                currentTrack = track;
             });
 
-            isPaused = false;
-
             Debug.WriteLine("Starting timer");
-            nextTrackTimer.Interval = track.Duration * 1000 + 1;
-            nextTrackTimer.Start();
+            CurrentTrack = track;
+            _nextTrackTimer.Interval = track.Duration * 1000 + 1;
+            _nextTrackTimer.Start();
             Debug.WriteLine("Timer started");
         }
 
-        public async Task PauseMusic()
+        public async Task ContinueOrPauseMusic()
         {
-            await Task.Run(() =>
+            if (_waveOut.PlaybackState == PlaybackState.Paused)
             {
-                waveOut.Pause();
-            });
-            isPaused = true;
-            nextTrackTimer.Stop();
-        }
-
-        public async Task ContinueMusic()
-        {
-            await Task.Run(() =>
+                await Task.Run(() =>
+                    _waveOut.Play());
+                _nextTrackTimer.Start();
+            }
+            else
             {
-                waveOut.Play();
-            });
-            isPaused = false;
-            nextTrackTimer.Start();
-        }
-
-        public async Task StopMusic()
-        {
-            await Task.Run(() =>
-            {
-                currentTrack = null;
-                waveOut.Stop();
-            });
-            isPaused = true;
-            nextTrackTimer.Stop();
+                await Task.Run(() =>
+                    _waveOut.Pause());
+                _nextTrackTimer.Stop();
+            }
         }
 
         public async Task UpdateAudioList()
         {
             await Task.Run(async () =>
             {
-                myTracks = await api.Audio.GetAsync(new VkNet.Model.RequestParams.AudioGetParams()
+                await using var db = new TrackDbContext();
+                if (StaticFunctions.CheckForInternetConnection())
                 {
-                    OwnerId = api.UserId,
-                });
+                    var tracks = await Api.Audio.GetAsync(new AudioGetParams
+                    {
+                        OwnerId = Api.Users.Get(new List<long>()).FirstOrDefault()?.Id,
+                    });
+                    foreach (var track in db.Tracks)
+                    {
+                        db.Tracks.Remove(track);
+                    }
+                    await db.Tracks.AddRangeAsync(OfflineTrack.ToOffline(tracks).ToList());
+                    await db.SaveChangesAsync();
+                }
             });
         }
 
-        private void OnNextTrack(object sender, System.Timers.ElapsedEventArgs e)
+        private void OnNextTrack(object sender, ElapsedEventArgs e)
         {
-            Debug.WriteLine("Event: Next Track");
-            int nextTrack = myTracks.IndexOf(currentTrack) + 1;
-            if (myTracks.Count() < nextTrack + 1)
-            {
-                nextTrack = 0;
-            }
-            Debug.WriteLine($"Next is \"{myTracks[nextTrack].Title}\"");
-            PlayMusic(myTracks[nextTrack]);
+            using var db = new TrackDbContext();
+            var tracks = db.Tracks.ToList();
+            var nextTrack = tracks.FindIndex(x => x.Id == CurrentTrack.Id) + 1;
+            if (db.Tracks.Count() < nextTrack + 1) nextTrack = 0;
+            Debug.WriteLine($"Next is \"{tracks[nextTrack].Title}\"");
+            PlayMusic(tracks[nextTrack]);
         }
     }
 }

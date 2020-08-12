@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -14,7 +16,7 @@ namespace VK
     /// </summary>
     public partial class MainControl : UserControl
     {
-        private int audioDelta = 0; //maximum ListView offset
+        private int _audioDelta = 0; //maximum ListView offset
 
 
         public MainControl()
@@ -26,14 +28,20 @@ namespace VK
 
         private async Task DrawAudioList()
         {
+            Debug.Print("Drawing");
             MainWindow window = Application.Current.MainWindow as MainWindow;
             await window.background.UpdateAudioList();
-            int i = 0;
+            List<OfflineTrack> tracks;
+            await using (var db = new TrackDbContext())
+            {
+                tracks = db.Tracks.ToList();
+            }
+            var i = 0;
             while(i < 10)
             {
                 try
                 {
-                    AudioList.Items.Add(new MusicListBoxControl(window.background.MyTracks[i]));
+                    AudioList.Items.Add(new MusicListBoxControl(tracks[i]));
                     i++;
                 }
                 catch (ArgumentOutOfRangeException)
@@ -63,16 +71,21 @@ namespace VK
         private void ScrollEvent(object sender, ScrollChangedEventArgs e)
         {
             MainWindow window = Application.Current.MainWindow as MainWindow;
+            List<OfflineTrack> tracks;
+            using (var db = new TrackDbContext())
+            {
+                tracks = db.Tracks.ToList();
+            }
             try
             {
-                if (e.VerticalOffset / 3 > audioDelta)
+                if (e.VerticalOffset / 3 > _audioDelta)
                 {
-                    AudioList.Items.Add(new MusicListBoxControl(window.background.MyTracks[AudioList.Items.Count]));
+                    AudioList.Items.Add(new MusicListBoxControl(tracks[AudioList.Items.Count]));
                     Debug.WriteLine($"Loaded {AudioList.Items.Count} items.");
                 }
-                if(e.VerticalOffset / 3 > audioDelta)
+                if(e.VerticalOffset / 3 > _audioDelta)
                 {
-                    audioDelta = Convert.ToInt32(e.VerticalOffset / 3);
+                    _audioDelta = Convert.ToInt32(e.VerticalOffset / 3);
                 }
             }
             catch(IndexOutOfRangeException)

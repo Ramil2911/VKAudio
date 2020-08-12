@@ -7,5 +7,6 @@ namespace VK
     /// </summary>
     public partial class App : Application
     {
+        
     }
 }

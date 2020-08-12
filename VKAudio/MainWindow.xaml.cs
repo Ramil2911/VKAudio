@@ -1,4 +1,8 @@
-﻿using System.Windows;
+﻿#nullable enable
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Windows;
+using VKAudio;
 using VkNet;
 
 namespace VK
@@ -13,7 +17,7 @@ namespace VK
         public MainWindow()
         {
             InitializeComponent();
-
+            (new TrackDbContext()).Database.EnsureCreated();
             CurrentContent.Content = new LoginControl();
         }
 
@@ -22,10 +26,19 @@ namespace VK
             Application.Current.Shutdown(0);
         }
 
-        public void OpenMainPage_Func(VkApi api)
+        public void OpenMainPage_Func(VkApi? api)
         {
+            Debug.Print("MainScreen");
             background = new VK.Background(api);
             CurrentContent.Content = new MainControl();
+        }
+
+        private void PlayOrPause_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (CurrentContent.Content is MainControl)
+            {
+                background.ContinueOrPauseMusic();
+            }
         }
     }
 }
