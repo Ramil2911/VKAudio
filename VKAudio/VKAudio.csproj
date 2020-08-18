@@ -24,6 +24,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.6" />
+    <PackageReference Include="ModernWpfUI" Version="0.9.1" />
+    <PackageReference Include="ModernWpfUI.MahApps" Version="0.9.1" />
     <PackageReference Include="NAudio" Version="1.9.0" />
     <PackageReference Include="VkNet" Version="1.48.1" />
     <PackageReference Include="VkNet.AudioBypassService" Version="1.5.3" />

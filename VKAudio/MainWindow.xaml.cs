@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using VKAudio;
@@ -17,6 +18,10 @@ namespace VK
         public MainWindow()
         {
             InitializeComponent();
+            if (!Directory.Exists("C:\\ProgramData\\ramil2911\\VKAudio"))
+                Directory.CreateDirectory("C:\\ProgramData\\ramil2911\\VKAudio");
+            if (!File.Exists("C:\\ProgramData\\ramil2911\\VKAudio\\token"))
+                File.Create("C:\\ProgramData\\ramil2911\\VKAudio\\token");
             (new TrackDbContext()).Database.EnsureCreated();
             CurrentContent.Content = new LoginControl();
         }

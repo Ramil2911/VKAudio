@@ -37,14 +37,13 @@ namespace VK
 
         private async Task LoginByToken()
         {
-            ErrorText.Text = "Вход...";
+            ErrorText.Text = "";
             Debug.Print("LoginByToken()");
             Debug.Print(File.ReadAllLines("C:\\ProgramData\\ramil2911\\VKAudio\\token", Encoding.Default)[0]);
             if (string.IsNullOrWhiteSpace(File.ReadAllLines("C:\\ProgramData\\ramil2911\\VKAudio\\token", Encoding.Default)[0])) return;
                 
             if (!StaticFunctions.CheckForInternetConnection())
             {
-                Debug.Print("PIZDA");
                 MainWindow mainWindowa = Window.GetWindow(this) as MainWindow;
                 mainWindowa?.OpenMainPage_Func(null);
                 ErrorText.Text = "";
@@ -63,7 +62,6 @@ namespace VK
             }
             catch (Exception ex)
             {
-                Debug.Print($"PIZDA2 {ex.Message}");
                 ErrorText.Text = "";
                 return;
             }
@@ -121,7 +119,7 @@ namespace VK
                 Directory.CreateDirectory("C:\\ProgramData\\ramil2911\\VKAudio");
             if (!File.Exists("C:\\ProgramData\\ramil2911\\VKAudio\\token"))
                 File.Create("C:\\ProgramData\\ramil2911\\VKAudio\\token");
-            File.WriteAllText("C:\\ProgramData\\ramil2911\\VKAudio\\token", _api.Token.ToString());
+            await File.WriteAllTextAsync("C:\\ProgramData\\ramil2911\\VKAudio\\token", _api.Token);
 
             MainWindow mainWindow = Window.GetWindow(this) as MainWindow;
             mainWindow?.OpenMainPage_Func(_api);

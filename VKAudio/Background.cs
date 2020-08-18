@@ -85,20 +85,20 @@ namespace VK
             }
         }
 
-        public async Task UpdateAudioList()
+        public async Task UpdateAudioList() //метод обновления бд с записями
         {
-            await Task.Run(async () =>
+            await Task.Run(async () => //Для того, чтобы не задерживать обновление экрана, задача запускается в таске.
             {
                 await using var db = new TrackDbContext();
-                if (StaticFunctions.CheckForInternetConnection())
+                if (StaticFunctions.CheckForInternetConnection()) //в случае отсутствия интернет-соединения база данных не обновляется
                 {
                     var tracks = await Api.Audio.GetAsync(new AudioGetParams
                     {
-                        OwnerId = Api.Users.Get(new List<long>()).FirstOrDefault()?.Id,
+                        OwnerId = Api.Users.Get(new List<long>()).FirstOrDefault()?.Id, //так как мы можем войти через токен VkApi.token может не содержать userid, это обход
                     });
                     foreach (var track in db.Tracks)
                     {
-                        db.Tracks.Remove(track);
+                        db.Tracks.Remove(track); //очищаем бд перед записью, записываем и созраняем
                     }
                     await db.Tracks.AddRangeAsync(OfflineTrack.ToOffline(tracks).ToList());
                     await db.SaveChangesAsync();
@@ -106,12 +106,12 @@ namespace VK
             });
         }
 
-        private void OnNextTrack(object sender, ElapsedEventArgs e)
-        {
-            using var db = new TrackDbContext();
+        private void OnNextTrack(object sender, ElapsedEventArgs e) //Метод запуска следующей записи по концу предыдущей
+        {                                                           //запускается таймером
+            using var db = new TrackDbContext(); 
             var tracks = db.Tracks.ToList();
-            var nextTrack = tracks.FindIndex(x => x.Id == CurrentTrack.Id) + 1;
-            if (db.Tracks.Count() < nextTrack + 1) nextTrack = 0;
+            var nextTrack = tracks.FindIndex(x => x.Id == CurrentTrack.Id) + 1; //делает из бд лист и ищет в нем номер закончившегося трека (.IndexOf() не работает)
+            if (db.Tracks.Count() < nextTrack + 1) nextTrack = 0; //прибавляет к его индексу еденицу и запускает следующий трек
             Debug.WriteLine($"Next is \"{tracks[nextTrack].Title}\"");
             PlayMusic(tracks[nextTrack]);
         }
